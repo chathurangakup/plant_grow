@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "580374939020",
+    "firebase_url": "https://smart-pot-d88d5-default-rtdb.firebaseio.com",
+    "project_id": "smart-pot-d88d5",
+    "storage_bucket": "smart-pot-d88d5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:580374939020:android:ee2034499e175b86f482a9",
+        "android_client_info": {
+          "package_name": "com.anonymous.plant_grow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcyxkQlbkv3EWwavC10fZthMDFbHz7bJU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
