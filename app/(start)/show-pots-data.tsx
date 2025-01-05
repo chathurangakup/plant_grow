@@ -34,7 +34,7 @@ const ShowPotsData = () => {
         } else {
           console.log('No documents found.');
           setIsDataEmpty(true); // Mark data as empty
-          setIsDisableBtn(false)
+          setIsDisableBtn(true)
         }
       } catch (error) {
         console.error('Error fetching the last document:', error);

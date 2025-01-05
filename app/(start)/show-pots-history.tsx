@@ -64,10 +64,10 @@ const ShowPotsHistory = () => {
       const querySnapshot = await firestore()
         .collection(name)
         .orderBy("Timestamp", "asc") // Order in ascending order (oldest first)
-        .startAfter(lastDocument) // Start after the last document of the previous query
+
         .limit(10) // Limit the result to the next 10 documents
         .get();
-
+        console.log('querySnapshot:', querySnapshot.empty);
       if (!querySnapshot.empty) {
         querySnapshot.forEach((doc: { data: () => any }) => {
           const data = doc.data(); // Extract the document data
@@ -111,12 +111,12 @@ const ShowPotsHistory = () => {
         });
 
         // Now you have arrays for each field
-        // console.log('Humidity:', Humidity);
-        // console.log('LightLevel:', LightLevel);
-        // console.log('TDS:', TDS);
-        // console.log('Temperature:', Temperature);
+        console.log('Humidity:', Humidity);
+        console.log('LightLevel:', LightLevel);
+        console.log('TDS:', TDS);
+        console.log('Temperature:', Temperature);
 
-        // console.log('WaterLevel:', WaterLevel);
+        console.log('WaterLevel:', WaterLevel);
 
         setTimestamp(Timestamp);
         setWaterLevel(WaterLevel);

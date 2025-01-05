@@ -1,122 +1,62 @@
-import { Image, StyleSheet, Platform, Dimensions } from "react-native";
+import { StyleSheet, Dimensions, View, FlatList, SafeAreaView, TouchableOpacity , Text} from "react-native";
 
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+
 
 import firestore from "@react-native-firebase/firestore";
 import { useEffect, useState } from "react";
-import { LineChart } from "react-native-chart-kit";
+
+
+import { router, useLocalSearchParams } from "expo-router";
+import CustomButton from "../components/CustomButton";
 
 const screenWidth = Dimensions.get("window").width;
 
 export default function HomeScreen() {
-  const [collections, setCollections] = useState([]);
-  const [timestamp, setTimestamp] = useState<any[]>([]);
-  const [waterlevel, setWaterLevel] = useState<any[]>([]);
 
-  const fetchLastDocument = async () => {
+
+  const [potsNames, setPotArray] = useState<any[]>([]);
+   const [isDisableBtn, setIsDisableBtn] = useState(true)
+
+
+
+
+
+  const getPotNames = async () => {
+    const potNames = []; // Array to store the results
+    let i = 1; // Counter for dynamic collection names
+   
     try {
-      const querySnapshot = await firestore()
-        .collection("Pot001")
-        .orderBy("Timestamp", "desc") // Replace with your timestamp field
-        .limit(1)
-        .get();
-
-      if (!querySnapshot.empty) {
-        const lastDocumentData = querySnapshot.docs[0].data();
-        console.log("Last document:", lastDocumentData);
-      } else {
-        console.log("No documents found.");
+      while (true) {
+        const collectionName = `Pot${String(i).padStart(3, "0")}`; // Generate collection name (e.g., Pot001, Pot002, etc.)
+        const querySnapshot = await firestore()
+          .collection(collectionName)
+          .get();
+  
+        if (!querySnapshot.empty) {
+          // Add the collection info to the array
+          potNames.push({ id: i, name: collectionName });
+          console.log(`Added ${collectionName} to the array.`);
+        } else {
+          console.log(`${collectionName} is empty. Stopping the loop.`);
+          break; // Stop the loop if the collection is empty
+        }
+  
+        i++; // Increment counter for the next collection
       }
+  
+      console.log("Final pot names array:", potNames);
+      setPotArray(potNames)
+      setIsDisableBtn(false)
+
     } catch (error) {
-      console.error("Error fetching the last document:", error);
+      console.error("Error fetching collections:", error);
     }
   };
+  
 
-  // const fetchAllDocument = async () => {
-  //   try {
-  //     const querySnapshot = await firestore()
-  //       .collection('Pot001')
-  //       .get();
 
-  //     if (!querySnapshot.empty) {
-  //       const lastDocumentData = querySnapshot.docs;
-  //       console.log('All document:', lastDocumentData);
-  //     } else {
-  //       console.log('No documents found.');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching the last document:', error);
-  //   }
-  // };
 
-  const fetchAllDocument = async () => {
-    const Humidity: any[] = [];
-    const LightLevel: any[] = [];
-    const TDS: any[] = [];
-    const Temperature: any[] = [];
-    const Timestamp: any[] = [];
-    const WaterLevel: any[] = [];
 
-    try {
-      const querySnapshot = await firestore().collection("Pot001").get();
-
-      if (!querySnapshot.empty) {
-        querySnapshot.forEach((doc) => {
-          const data = doc.data(); // Extract the document data
-
-          // Extract values from '_data'
-          Humidity.push(data["Humidity (%)"]);
-          LightLevel.push(data["Light Level (lux)"]);
-          TDS.push(data["TDS (mg/L)"]);
-          Temperature.push(data["Temperature (°C)"]);
-
-          // Handle both single and array timestamps
-          const firestoreTimestamp = data["Timestamp"]; // Assuming Timestamp can be a single object or array
-
-          if (Array.isArray(firestoreTimestamp)) {
-            // If it's an array, map over the items
-            const formattedTimestamps = firestoreTimestamp.map((timestamp) => {
-              const date = new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
-              return date.toLocaleString("en-US", {
-                timeZone: "Asia/Kolkata", // Adjust this if you want a different time zone
-                timeZoneName: "short",
-              });
-            });
-            Timestamp.push(formattedTimestamps);
-          } else {
-            // If it's a single object, just format it
-            const date = new Date(firestoreTimestamp.seconds * 1000);
-            const formattedTimestamp = date.toLocaleString("en-US", {
-              timeZone: "Asia/Kolkata",
-              timeZoneName: "short",
-            });
-            Timestamp.push(formattedTimestamp); // Push it as an array for consistency
-          }
-
-          WaterLevel.push(data["Water Level (cm)"]);
-        });
-
-        // Now you have arrays for each field
-        // console.log('Humidity:', Humidity);
-        // console.log('LightLevel:', LightLevel);
-        // console.log('TDS:', TDS);
-        // console.log('Temperature:', Temperature);
-
-        // console.log('WaterLevel:', WaterLevel);
-
-        setTimestamp(Timestamp);
-        setWaterLevel(WaterLevel);
-
-        // You can now use these arrays to render graphs, etc.
-      } else {
-        console.log("No documents found.");
-      }
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-    }
-  };
 
   const createCollection = async (collectionName: string) => {
     try {
@@ -132,86 +72,109 @@ export default function HomeScreen() {
     }
   };
   useEffect(() => {
-    // fetchLastDocument();
-  //   fetchAllDocument();
-  // console.log("timestamp", timestamp)
-  // console.log("waterlevel", waterlevel)
-
+    setIsDisableBtn(true)
+    getPotNames();
+   
   }, []);
 
-  const data = {
-    labels: ["8/3/2024, 5:30:00 AM GMT+5:30", "8/3/2024, 6:30:00 AM GMT+5:30", "8/3/2024, 7:30:00 AM GMT+5:30", "8/3/2024, 8:30:00 AM GMT+5:30", "8/3/2024, 9:30:00 AM GMT+5:30", "8/3/2024, 10:30:00 AM GMT+5:30", "8/3/2024, 11:30:00 AM GMT+5:30", "8/3/2024, 12:30:00 PM GMT+5:30", "8/3/2024, 1:30:00 PM GMT+5:30"],
-    datasets: [
-      {
-        data: [20, 19.97, 19.92, 19.87, 19.83, 19.8, 19.77, 19.72, 19.66, 19.62],
-      }
-    ],
+
+
+
+  const createNextPotCollection = (potNames: any[]) => {
+    if (potNames.length === 0) {
+      console.error("No existing pot names found.");
+      return;
+    }
+  
+    // Find the latest ID
+    const latestId = Math.max(...potNames.map((pot) => pot.id));
+  
+    // Increment ID and prepare the next collection name
+    const nextId = latestId + 1;
+    const nextCollectionName = `Pot${String(nextId).padStart(3, "0")}`;
+    createCollection(nextCollectionName);
   };
 
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-      headerImage={
-        <Image
-          source={require("@/assets/images/partial-react-logo.png")}
-          style={styles.reactLogo}
-        />
-      }
-    >
-      <ThemedView style={styles.titleContainer}></ThemedView>
-      {/* <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-      </ThemedView> */}
+  const handleButtonPress = () => {
+    console.log("Button Pressed", "You clicked the button!");
+    createNextPotCollection(potsNames)
 
- <LineChart
-  data={data}
-  width={screenWidth}
-  height={220}
-  chartConfig={{
-    backgroundColor: "#e26a00",
-    backgroundGradientFrom: "#fb8c00",
-    backgroundGradientTo: "#ffa726",
-    decimalPlaces: 2, // optional, defaults to 2dp
-    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-    style: {
-      borderRadius: 16
-    },
-    propsForDots: {
-      r: "6",
-      strokeWidth: "2",
-      stroke: "#ffa726"
-    }
-  }}
-/> 
-    </ParallaxScrollView>
+  };
+
+
+  const clickPotName = (name: string) => {
+    router.push({
+      pathname: '/(start)/show-pots-data',
+      params: { name },
+    });
+  }
+
+  const renderItem = ({ item }: any) => (
+    <TouchableOpacity onPress={()=>clickPotName(item.name)}>
+      <View style={styles.item}>
+          <Text style={styles.id}>ID: {item.id}</Text>
+          <Text style={styles.name}>Name:  <Text style={styles.nameText}>{item.name}</Text></Text>
+        </View>
+    </TouchableOpacity>
+ 
+  );
+
+  return (
+
+    <SafeAreaView style={styles.container}>
+         <Text style={styles.title}>Smart Pot</Text>
+    <FlatList
+      data={potsNames}
+      keyExtractor={(item) => item.id.toString()} // Unique key for each item
+      renderItem={renderItem}
+    />
+
+     <CustomButton title="Add new Pot" onPress={()=>handleButtonPress()} disabled={isDisableBtn} />
+  </SafeAreaView>
+    
+
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#f9f9f9",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  item: {
+    padding: 15,
+    marginVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
+  id: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#555",
+  },
+  name: {
+    fontSize: 14,
+    color: "#555",
+  },
+  nameText:{
+    fontSize: 24,
+    color: "#555",
+  },
+
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 20,
+    marginTop: 20,
+    color: "#333",
   },
 });
+
+
